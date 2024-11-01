@@ -2,6 +2,12 @@
 name = "gaussian_curve_fit"
 version = "0.1.0"
 edition = "2021"
+license = "GPL-2.0-or-later"
+description = "A no_std library for gaussian curve coefficents calculation."
+homepage = "https://github.com/Joker2770/gaussian_curve_fit"
+repository = "https://github.com/Joker2770/gaussian_curve_fit"
+authors = ["Joker2770"]
+keywords = ["gaussian", "gaussian-curve", "curve-fitting"]
 
 [dependencies]
 nalgebra = { version = "0.33.2", default-features = false, features = ["libm"] }
