@@ -42,6 +42,10 @@ pub mod gaussian_curve {
             }
         }
 
+        pub fn coefficents(&self) -> (f32, f32, f32) {
+            (self.alpha, self.mu, self.sigma)
+        }
+
         pub fn peak(&self) -> (f32, f32) {
             (self.mu, self.alpha)
         }
@@ -61,24 +65,24 @@ pub mod gaussian_curve {
             (tmp_x, tmp_y)
         }
 
-        // solve ax = b
+        /// Solve ax = b.
+        /// Any singular value smaller than `eps` is assumed to be zero.
         pub fn get_coefficents_from_8_matrix_data(
             &mut self,
             a: &[f32; POINT_CNT * 3],
             b: &[f32; POINT_CNT],
+            eps: f32,
         ) {
             if a.len() == 3 * b.len() {
-                type Matrix6x1f32 = SMatrix<f32, POINT_CNT, 1>;
-                type Matrix6x3f32 = SMatrix<f32, POINT_CNT, 3>;
-                let mb = Matrix6x1f32::from_row_slice(b);
-                let ma = Matrix6x3f32::from_row_slice(a);
-                // debug_rprintln!("{}", ma);
+                type MatrixXx1f32 = SMatrix<f32, POINT_CNT, 1>;
+                type MatrixXx3f32 = SMatrix<f32, POINT_CNT, 3>;
+                let mb = MatrixXx1f32::from_row_slice(b);
+                let ma = MatrixXx3f32::from_row_slice(a);
 
                 let decomp = ma.svd(true, true);
 
-                let x = decomp.solve(&mb, 1e-4);
+                let x = decomp.solve(&mb, eps);
                 if let Ok(r) = x {
-                    // debug_rprintln!("***{}", r);
                     if r[2] < 0.0f32 {
                         self.alpha = (r[0] - r[1].powf(2.0f32) / (4.0f32 * r[2])).exp();
                         self.mu = -r[1] / (2.0f32 * r[2]);
