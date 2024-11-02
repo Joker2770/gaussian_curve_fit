@@ -2,11 +2,13 @@
 
 [![Rust](https://github.com/Joker2770/gaussian_curve_fit/actions/workflows/rust.yml/badge.svg)](https://github.com/Joker2770/gaussian_curve_fit/actions/workflows/rust.yml)
 
-A `no_std` library for gaussian curve coefficents calculation.
+A `no_std` and no heap memory library for gaussian curve coefficents calculation.
 
 ## example
 
 ```rust
+    use gaussian_curve_fit::gaussian_curve::GaussianCoefficents;
+
     let mut gaussian_coes = GaussianCoefficents::default();
     let xdata = [
         -8.0f32, -6.0f32, -4.0f32, -2.0f32, 0.0f32, 2.0f32, 4.0f32, 6.0f32,

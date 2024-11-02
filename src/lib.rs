@@ -1,5 +1,5 @@
 /*
-A no_std library for gaussian curve coefficents calculation.
+A no_std and no heap memory library for gaussian curve coefficents calculation.
 Copyright (C) 2024  joker2770
 
 This program is free software: you can redistribute it and/or modify
