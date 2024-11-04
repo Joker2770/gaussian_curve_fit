@@ -120,6 +120,7 @@ pub mod gaussian_curve {
                 self.alpha
                     * ((-(x - self.mu_x).powf(2.0f32) / (2.0f32 * self.sigma_x.powf(2.0f32)))
                         + (-(y - self.mu_y).powf(2.0f32) / (2.0f32 * self.sigma_y.powf(2.0f32))))
+                    .exp()
             } else {
                 0.0f32
             }
