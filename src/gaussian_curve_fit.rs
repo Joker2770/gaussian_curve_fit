@@ -77,7 +77,7 @@ pub mod gaussian_curve {
             a: &[f32; POINT_NUM_2D * MATRIX_COLUMN_2D],
             b: &[f32; POINT_NUM_2D],
             eps: f32,
-        ) {
+        ) -> Self {
             if a.len() == MATRIX_COLUMN_2D * b.len() {
                 type MatrixXx1f32 = SMatrix<f32, POINT_NUM_2D, 1>;
                 type MatrixXx3f32 = SMatrix<f32, POINT_NUM_2D, MATRIX_COLUMN_2D>;
@@ -102,6 +102,12 @@ pub mod gaussian_curve {
                     self.mu = 0.0f32;
                     self.sigma = 0.0f32;
                 }
+            }
+
+            Self {
+                alpha: self.alpha,
+                mu: self.mu,
+                sigma: self.sigma,
             }
         }
     }
@@ -161,7 +167,7 @@ pub mod gaussian_curve {
             a: &[f32; POINT_NUM_3D * MATRIX_COLUMN_3D],
             b: &[f32; POINT_NUM_3D],
             eps: f32,
-        ) {
+        ) -> Self {
             if a.len() == MATRIX_COLUMN_3D * b.len() {
                 type MatrixXx1f32 = SMatrix<f32, POINT_NUM_3D, 1>;
                 type MatrixXx5f32 = SMatrix<f32, POINT_NUM_3D, MATRIX_COLUMN_3D>;
@@ -195,6 +201,14 @@ pub mod gaussian_curve {
                     self.sigma_x = 0.0f32;
                     self.sigma_y = 0.0f32;
                 }
+            }
+
+            Self {
+                alpha: self.alpha,
+                mu_x: self.mu_x,
+                mu_y: self.mu_y,
+                sigma_x: self.sigma_x,
+                sigma_y: self.sigma_y,
             }
         }
     }
