@@ -20,9 +20,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 pub mod gaussian_curve_fit;
 
+pub use gaussian_curve_fit::gaussian_curve;
+
 #[cfg(test)]
 mod tests {
-    use gaussian_curve_fit::gaussian_curve::GaussianCoefficents2D;
+    use gaussian_curve::GaussianCoefficents2D;
 
     use super::*;
 
