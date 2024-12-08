@@ -37,7 +37,7 @@ pub mod gaussian_curve {
     }
 
     impl GaussianCoefficents2D {
-        /// $$f(x) & = {\alpha}{e^{-{\frac {(x - \mu)^2}{2\sigma^2}}}}$$
+        /// $$f(x) = {\alpha}{e^{-{\frac {(x - \mu)^2}{2\sigma^2}}}}$$
         pub fn value(&self, x: f32) -> f32 {
             if self.sigma.abs() > 0.0f32 {
                 self.alpha
@@ -122,7 +122,7 @@ pub mod gaussian_curve {
     }
 
     impl GaussianCoefficents3D {
-        /// $$f(x, y) & = {\alpha}{e^{{-{\frac {(x - {\mu}_x)^2}{2{\sigma}_x^2}}} + {-{\frac {(y - {\mu}_y)^2}{2{\sigma}_y^2}}}}}$$
+        /// $$f(x, y) = {\alpha}{e^{{-{\frac {(x - {\mu}_x)^2}{2{\sigma}_x^2}}} + {-{\frac {(y - {\mu}_y)^2}{2{\sigma}_y^2}}}}}$$
         pub fn value(&self, x: f32, y: f32) -> f32 {
             if self.sigma_x.abs() > 0.0f32 && self.sigma_y.abs() > 0.0f32 {
                 self.alpha
