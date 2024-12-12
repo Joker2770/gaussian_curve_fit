@@ -1,9 +1,9 @@
 [package]
 name = "gaussian_curve_fit"
-version = "0.2.3"
+version = "0.2.4"
 edition = "2021"
 license = "GPL-2.0-or-later"
-description = "A no_std and no heap memory library for gaussian curve coefficents calculation."
+description = "A `no_std` and no `alloc` library for gaussian curve coefficents calculation."
 homepage = "https://github.com/Joker2770/gaussian_curve_fit"
 repository = "https://github.com/Joker2770/gaussian_curve_fit"
 authors = ["Joker2770"]
@@ -11,3 +11,17 @@ keywords = ["gaussian", "gaussian-curve", "curve-fitting"]
 
 [dependencies]
 nalgebra = { version = "0.33.2", default-features = false, features = ["libm"] }
+
+[profile.dev]
+codegen-units = 1   # better optimizations
+lto = true          # better optimizations
+debug = true        # debug symbols
+opt-level = 0
+incremental = false
+
+[profile.release]
+codegen-units = 1   # better optimizations
+lto = true          # better optimizations
+strip = true
+opt-level = 3
+incremental = false
