@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #![allow(unused_imports)]
 
 pub mod gaussian_curve {
-    use anyhow::Result;
+    use crate::error::CustomError;
     use nalgebra::{ComplexField, SMatrix};
 
     const POINT_NUM_2D: usize = 8;
@@ -37,12 +37,12 @@ pub mod gaussian_curve {
 
     impl GaussianCoefficents2D {
         /// $$f(x) = {\alpha}{e^{-{\frac {(x - \mu)^2}{2\sigma^2}}}}$$
-        pub fn value(&self, x: f32) -> Result<f32> {
+        pub fn value(&self, x: f32) -> Result<f32, CustomError> {
             if self.sigma.abs() > 0.0f32 {
                 Ok(self.alpha
                     * (-(x - self.mu).powf(2.0f32) / (2.0f32 * self.sigma * self.sigma)).exp())
             } else {
-                Err(anyhow::anyhow!("Illegal sigma: {}", self.sigma))
+                Err(CustomError::IllegalSigma(self.sigma))
             }
         }
 
@@ -78,7 +78,7 @@ pub mod gaussian_curve {
             a: &[f32; POINT_NUM_2D * MATRIX_COLUMN_2D],
             b: &[f32; POINT_NUM_2D],
             eps: f32,
-        ) -> Result<Self> {
+        ) -> Result<Self, CustomError> {
             if a.len() == MATRIX_COLUMN_2D * b.len() {
                 type MatrixXx1f32 = SMatrix<f32, POINT_NUM_2D, 1>;
                 type MatrixXx3f32 = SMatrix<f32, POINT_NUM_2D, MATRIX_COLUMN_2D>;
@@ -98,21 +98,21 @@ pub mod gaussian_curve {
                             self.alpha = 0.0f32;
                             self.mu = 0.0f32;
                             self.sigma = 0.0f32;
-                            return Err(anyhow::anyhow!("Illegal result from SVD-solve: {}", r));
+                            return Err(CustomError::IllegalResult);
                         }
                     }
                     Err(_) => {
                         self.alpha = 0.0f32;
                         self.mu = 0.0f32;
                         self.sigma = 0.0f32;
-                        return Err(anyhow::anyhow!("SVD solve failed"));
+                        return Err(CustomError::SvdFailed);
                     }
                 }
             } else {
                 self.alpha = 0.0f32;
                 self.mu = 0.0f32;
                 self.sigma = 0.0f32;
-                return Err(anyhow::anyhow!("Matrix size not match"));
+                return Err(CustomError::MatrixSizeNotMatch);
             }
 
             Ok(Self {
@@ -134,18 +134,14 @@ pub mod gaussian_curve {
 
     impl GaussianCoefficents3D {
         /// $$f(x, y) = {\alpha}{e^{{-{\frac {(x - {\mu}_x)^2}{2{\sigma}_x^2}}} + {-{\frac {(y - {\mu}_y)^2}{2{\sigma}_y^2}}}}}$$
-        pub fn value(&self, x: f32, y: f32) -> Result<f32> {
+        pub fn value(&self, x: f32, y: f32) -> Result<f32, CustomError> {
             if self.sigma_x.abs() > 0.0f32 && self.sigma_y.abs() > 0.0f32 {
                 Ok(self.alpha
                     * ((-(x - self.mu_x).powf(2.0f32) / (2.0f32 * self.sigma_x.powf(2.0f32)))
                         + (-(y - self.mu_y).powf(2.0f32) / (2.0f32 * self.sigma_y.powf(2.0f32))))
                     .exp())
             } else {
-                Err(anyhow::anyhow!(
-                    "Illegal sigma(sigma_x: {}, sigma_y: {})",
-                    self.sigma_x,
-                    self.sigma_y
-                ))
+                Err(CustomError::IllegalSigmaXY(self.sigma_x, self.sigma_y))
             }
         }
 
@@ -184,7 +180,7 @@ pub mod gaussian_curve {
             a: &[f32; POINT_NUM_3D * MATRIX_COLUMN_3D],
             b: &[f32; POINT_NUM_3D],
             eps: f32,
-        ) -> Result<Self> {
+        ) -> Result<Self, CustomError> {
             if a.len() == MATRIX_COLUMN_3D * b.len() {
                 type MatrixXx1f32 = SMatrix<f32, POINT_NUM_3D, 1>;
                 type MatrixXx5f32 = SMatrix<f32, POINT_NUM_3D, MATRIX_COLUMN_3D>;
@@ -211,7 +207,7 @@ pub mod gaussian_curve {
                             self.mu_y = 0.0f32;
                             self.sigma_x = 0.0f32;
                             self.sigma_y = 0.0f32;
-                            return Err(anyhow::anyhow!("Illegal result from SVD-solve: {}", r));
+                            return Err(CustomError::IllegalResult);
                         }
                     }
                     Err(_) => {
@@ -220,7 +216,7 @@ pub mod gaussian_curve {
                         self.mu_y = 0.0f32;
                         self.sigma_x = 0.0f32;
                         self.sigma_y = 0.0f32;
-                        return Err(anyhow::anyhow!("SVD solve failed"));
+                        return Err(CustomError::SvdFailed);
                     }
                 }
             } else {
@@ -229,7 +225,7 @@ pub mod gaussian_curve {
                 self.mu_y = 0.0f32;
                 self.sigma_x = 0.0f32;
                 self.sigma_y = 0.0f32;
-                return Err(anyhow::anyhow!("Matrix size not match"));
+                return Err(CustomError::MatrixSizeNotMatch);
             }
 
             Ok(Self {

@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #![no_std]
 
 pub mod gaussian_curve_fit;
+pub mod error;
 
 pub use gaussian_curve_fit::gaussian_curve;
 
