@@ -46,10 +46,12 @@ pub mod gaussian_curve {
             }
         }
 
+        /// (alpha, mu, sigma)
         pub fn coefficents(&self) -> (f32, f32, f32) {
             (self.alpha, self.mu, self.sigma)
         }
 
+        /// (mu, alpha)
         pub fn peak(&self) -> (f32, f32) {
             (self.mu, self.alpha)
         }
@@ -147,10 +149,12 @@ pub mod gaussian_curve {
             }
         }
 
+        /// (mu_x, mu_y, alpha)
         pub fn peak(&self) -> (f32, f32, f32) {
             (self.mu_x, self.mu_y, self.alpha)
         }
 
+        /// (alpha, mu_x, mu_y, sigma_x, sigma_y)
         pub fn coefficents(&self) -> (f32, f32, f32, f32, f32) {
             (self.alpha, self.mu_x, self.mu_y, self.sigma_x, self.sigma_y)
         }
