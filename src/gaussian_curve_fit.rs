@@ -37,7 +37,7 @@ pub mod gaussian_curve {
 
     impl GaussianCoefficents2D {
         /// $$f(x) = {\alpha}{e^{-{\frac {(x - \mu)^2}{2\sigma^2}}}}$$
-        pub fn value(&self, x: f32) -> Result<f32, anyhow::Error> {
+        pub fn value(&self, x: f32) -> Result<f32> {
             if self.sigma.abs() > 0.0f32 {
                 Ok(self.alpha
                     * (-(x - self.mu).powf(2.0f32) / (2.0f32 * self.sigma * self.sigma)).exp())
@@ -78,7 +78,7 @@ pub mod gaussian_curve {
             a: &[f32; POINT_NUM_2D * MATRIX_COLUMN_2D],
             b: &[f32; POINT_NUM_2D],
             eps: f32,
-        ) -> Result<Self, anyhow::Error> {
+        ) -> Result<Self> {
             if a.len() == MATRIX_COLUMN_2D * b.len() {
                 type MatrixXx1f32 = SMatrix<f32, POINT_NUM_2D, 1>;
                 type MatrixXx3f32 = SMatrix<f32, POINT_NUM_2D, MATRIX_COLUMN_2D>;
@@ -134,7 +134,7 @@ pub mod gaussian_curve {
 
     impl GaussianCoefficents3D {
         /// $$f(x, y) = {\alpha}{e^{{-{\frac {(x - {\mu}_x)^2}{2{\sigma}_x^2}}} + {-{\frac {(y - {\mu}_y)^2}{2{\sigma}_y^2}}}}}$$
-        pub fn value(&self, x: f32, y: f32) -> Result<f32, anyhow::Error> {
+        pub fn value(&self, x: f32, y: f32) -> Result<f32> {
             if self.sigma_x.abs() > 0.0f32 && self.sigma_y.abs() > 0.0f32 {
                 Ok(self.alpha
                     * ((-(x - self.mu_x).powf(2.0f32) / (2.0f32 * self.sigma_x.powf(2.0f32)))
@@ -184,7 +184,7 @@ pub mod gaussian_curve {
             a: &[f32; POINT_NUM_3D * MATRIX_COLUMN_3D],
             b: &[f32; POINT_NUM_3D],
             eps: f32,
-        ) -> Result<Self, anyhow::Error> {
+        ) -> Result<Self> {
             if a.len() == MATRIX_COLUMN_3D * b.len() {
                 type MatrixXx1f32 = SMatrix<f32, POINT_NUM_3D, 1>;
                 type MatrixXx5f32 = SMatrix<f32, POINT_NUM_3D, MATRIX_COLUMN_3D>;
