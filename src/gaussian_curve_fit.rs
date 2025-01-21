@@ -1,6 +1,6 @@
 /*
 A `no_std` and no `alloc` library for gaussian curve coefficents calculation.
-Copyright (C) 2024  joker2770
+Copyright (C) 2024-2025 joker2770
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,8 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #![allow(unused_imports)]
 
 pub mod gaussian_curve {
-    use core::f32;
-
+    use anyhow::Result;
     use nalgebra::{ComplexField, SMatrix};
 
     const POINT_NUM_2D: usize = 8;
@@ -38,12 +37,12 @@ pub mod gaussian_curve {
 
     impl GaussianCoefficents2D {
         /// $$f(x) = {\alpha}{e^{-{\frac {(x - \mu)^2}{2\sigma^2}}}}$$
-        pub fn value(&self, x: f32) -> f32 {
+        pub fn value(&self, x: f32) -> Result<f32, anyhow::Error> {
             if self.sigma.abs() > 0.0f32 {
-                self.alpha
-                    * (-(x - self.mu).powf(2.0f32) / (2.0f32 * self.sigma * self.sigma)).exp()
+                Ok(self.alpha
+                    * (-(x - self.mu).powf(2.0f32) / (2.0f32 * self.sigma * self.sigma)).exp())
             } else {
-                0.0f32
+                Err(anyhow::anyhow!("Illegal sigma: {}", self.sigma))
             }
         }
 
@@ -77,7 +76,7 @@ pub mod gaussian_curve {
             a: &[f32; POINT_NUM_2D * MATRIX_COLUMN_2D],
             b: &[f32; POINT_NUM_2D],
             eps: f32,
-        ) -> Self {
+        ) -> Result<Self, anyhow::Error> {
             if a.len() == MATRIX_COLUMN_2D * b.len() {
                 type MatrixXx1f32 = SMatrix<f32, POINT_NUM_2D, 1>;
                 type MatrixXx3f32 = SMatrix<f32, POINT_NUM_2D, MATRIX_COLUMN_2D>;
@@ -87,28 +86,38 @@ pub mod gaussian_curve {
                 let decomp = ma.svd(true, true);
 
                 let x = decomp.solve(&mb, eps);
-                if let Ok(r) = x {
-                    if r[2] < 0.0f32 {
-                        self.alpha = (r[0] - r[1].powf(2.0f32) / (4.0f32 * r[2])).exp();
-                        self.mu = -r[1] / (2.0f32 * r[2]);
-                        self.sigma = 1.0f32 / (-2.0f32 * r[2]).sqrt();
-                    } else {
+                match x {
+                    Ok(r) => {
+                        if r[2] < 0.0f32 {
+                            self.alpha = (r[0] - r[1].powf(2.0f32) / (4.0f32 * r[2])).exp();
+                            self.mu = -r[1] / (2.0f32 * r[2]);
+                            self.sigma = 1.0f32 / (-2.0f32 * r[2]).sqrt();
+                        } else {
+                            self.alpha = 0.0f32;
+                            self.mu = 0.0f32;
+                            self.sigma = 0.0f32;
+                            return Err(anyhow::anyhow!("Illegal result from SVD-solve: {}", r));
+                        }
+                    }
+                    Err(_) => {
                         self.alpha = 0.0f32;
                         self.mu = 0.0f32;
                         self.sigma = 0.0f32;
+                        return Err(anyhow::anyhow!("SVD solve failed"));
                     }
-                } else {
-                    self.alpha = 0.0f32;
-                    self.mu = 0.0f32;
-                    self.sigma = 0.0f32;
                 }
+            } else {
+                self.alpha = 0.0f32;
+                self.mu = 0.0f32;
+                self.sigma = 0.0f32;
+                return Err(anyhow::anyhow!("Matrix size not match"));
             }
 
-            Self {
+            Ok(Self {
                 alpha: self.alpha,
                 mu: self.mu,
                 sigma: self.sigma,
-            }
+            })
         }
     }
 
@@ -123,14 +132,18 @@ pub mod gaussian_curve {
 
     impl GaussianCoefficents3D {
         /// $$f(x, y) = {\alpha}{e^{{-{\frac {(x - {\mu}_x)^2}{2{\sigma}_x^2}}} + {-{\frac {(y - {\mu}_y)^2}{2{\sigma}_y^2}}}}}$$
-        pub fn value(&self, x: f32, y: f32) -> f32 {
+        pub fn value(&self, x: f32, y: f32) -> Result<f32, anyhow::Error> {
             if self.sigma_x.abs() > 0.0f32 && self.sigma_y.abs() > 0.0f32 {
-                self.alpha
+                Ok(self.alpha
                     * ((-(x - self.mu_x).powf(2.0f32) / (2.0f32 * self.sigma_x.powf(2.0f32)))
                         + (-(y - self.mu_y).powf(2.0f32) / (2.0f32 * self.sigma_y.powf(2.0f32))))
-                    .exp()
+                    .exp())
             } else {
-                0.0f32
+                Err(anyhow::anyhow!(
+                    "Illegal sigma(sigma_x: {}, sigma_y: {})",
+                    self.sigma_x,
+                    self.sigma_y
+                ))
             }
         }
 
@@ -167,7 +180,7 @@ pub mod gaussian_curve {
             a: &[f32; POINT_NUM_3D * MATRIX_COLUMN_3D],
             b: &[f32; POINT_NUM_3D],
             eps: f32,
-        ) -> Self {
+        ) -> Result<Self, anyhow::Error> {
             if a.len() == MATRIX_COLUMN_3D * b.len() {
                 type MatrixXx1f32 = SMatrix<f32, POINT_NUM_3D, 1>;
                 type MatrixXx5f32 = SMatrix<f32, POINT_NUM_3D, MATRIX_COLUMN_3D>;
@@ -177,39 +190,51 @@ pub mod gaussian_curve {
                 let decomp = ma.svd(true, true);
 
                 let x = decomp.solve(&mb, eps);
-                if let Ok(r) = x {
-                    if r[3] < 0.0f32 && r[4] < 0.0f32 {
-                        self.alpha = (r[0]
-                            - r[1].powf(2.0f32) / (4.0f32 * r[3])
-                            - r[2].powf(2.0f32) / (4.0f32 * r[4]))
-                            .exp();
-                        self.mu_x = -r[1] / (2.0f32 * r[3]);
-                        self.mu_y = -r[2] / (2.0f32 * r[4]);
-                        self.sigma_x = 1.0f32 / (-2.0f32 * r[3]).sqrt();
-                        self.sigma_y = 1.0f32 / (-2.0f32 * r[4]).sqrt();
-                    } else {
+                match x {
+                    Ok(r) => {
+                        if r[3] < 0.0f32 && r[4] < 0.0f32 {
+                            self.alpha = (r[0]
+                                - r[1].powf(2.0f32) / (4.0f32 * r[3])
+                                - r[2].powf(2.0f32) / (4.0f32 * r[4]))
+                                .exp();
+                            self.mu_x = -r[1] / (2.0f32 * r[3]);
+                            self.mu_y = -r[2] / (2.0f32 * r[4]);
+                            self.sigma_x = 1.0f32 / (-2.0f32 * r[3]).sqrt();
+                            self.sigma_y = 1.0f32 / (-2.0f32 * r[4]).sqrt();
+                        } else {
+                            self.alpha = 0.0f32;
+                            self.mu_x = 0.0f32;
+                            self.mu_y = 0.0f32;
+                            self.sigma_x = 0.0f32;
+                            self.sigma_y = 0.0f32;
+                            return Err(anyhow::anyhow!("Illegal result from SVD-solve: {}", r));
+                        }
+                    }
+                    Err(_) => {
                         self.alpha = 0.0f32;
                         self.mu_x = 0.0f32;
                         self.mu_y = 0.0f32;
                         self.sigma_x = 0.0f32;
                         self.sigma_y = 0.0f32;
+                        return Err(anyhow::anyhow!("SVD solve failed"));
                     }
-                } else {
-                    self.alpha = 0.0f32;
-                    self.mu_x = 0.0f32;
-                    self.mu_y = 0.0f32;
-                    self.sigma_x = 0.0f32;
-                    self.sigma_y = 0.0f32;
                 }
+            } else {
+                self.alpha = 0.0f32;
+                self.mu_x = 0.0f32;
+                self.mu_y = 0.0f32;
+                self.sigma_x = 0.0f32;
+                self.sigma_y = 0.0f32;
+                return Err(anyhow::anyhow!("Matrix size not match"));
             }
 
-            Self {
+            Ok(Self {
                 alpha: self.alpha,
                 mu_x: self.mu_x,
                 mu_y: self.mu_y,
                 sigma_x: self.sigma_x,
                 sigma_y: self.sigma_y,
-            }
+            })
         }
     }
 }
